@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Habit Tracker</title>
+    <style>
+      :root {
+        --bg: #f5f7f1;
+        --surface: #ffffff;
+        --ink: #1d2521;
+        --muted: #66736d;
+        --line: #dce3dd;
+        --accent: #1f7a5a;
+        --accent-strong: #15563f;
+        --gold: #b57616;
+        --danger: #a83232;
+        --done: #e6f4ed;
+        --shadow: 0 18px 45px rgba(20, 34, 28, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(160deg, rgba(31, 122, 90, 0.12), transparent 42%),
+          var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.62;
+      }
+
+      .shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 26px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .mark {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--accent);
+        color: white;
+        font-weight: 800;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(1.6rem, 4vw, 2.6rem);
+        line-height: 1.05;
+      }
+
+      h2 {
+        font-size: 1rem;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .status {
+        min-height: 24px;
+        color: var(--muted);
+        text-align: right;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+        gap: 18px;
+      }
+
+      .panel,
+      .habit-row {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .add-form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      input {
+        min-width: 0;
+        height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        background: #fbfcfa;
+        color: var(--ink);
+        outline: none;
+      }
+
+      input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(31, 122, 90, 0.16);
+      }
+
+      .primary,
+      .secondary,
+      .complete-button {
+        min-height: 40px;
+        border-radius: 8px;
+        padding: 0 14px;
+        font-weight: 700;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: white;
+      }
+
+      .primary:hover:not(:disabled) {
+        background: var(--accent-strong);
+      }
+
+      .secondary {
+        border: 1px solid var(--line);
+        background: #fbfcfa;
+        color: var(--ink);
+      }
+
+      .secondary:hover:not(:disabled) {
+        border-color: var(--accent);
+      }
+
+      .habit-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .habit-row {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        box-shadow: none;
+      }
+
+      .habit-row.done {
+        background: var(--done);
+      }
+
+      .check {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border: 2px solid var(--line);
+        border-radius: 50%;
+        color: transparent;
+        font-weight: 900;
+      }
+
+      .done .check {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: white;
+      }
+
+      .habit-name {
+        overflow-wrap: anywhere;
+        font-weight: 700;
+      }
+
+      .complete-button {
+        background: var(--ink);
+        color: white;
+      }
+
+      .empty {
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        padding: 24px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .streak-number {
+        margin: 8px 0 4px;
+        font-size: clamp(3rem, 12vw, 5.5rem);
+        font-weight: 850;
+        line-height: 0.92;
+      }
+
+      .milestone {
+        margin-top: 16px;
+        border-left: 4px solid var(--gold);
+        padding: 12px;
+        border-radius: 8px;
+        background: #fff7e8;
+        color: #4a3210;
+        font-weight: 700;
+      }
+
+      .progress {
+        margin: 18px 0;
+      }
+
+      .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .bar {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e4e9e4;
+      }
+
+      .bar-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--accent);
+        transition: width 180ms ease;
+      }
+
+      .error {
+        color: var(--danger);
+      }
+
+      .danger-button {
+        width: 100%;
+        min-height: 40px;
+        margin-top: 12px;
+        border: 1px solid rgba(168, 50, 50, 0.32);
+        border-radius: 8px;
+        background: #fff7f7;
+        color: var(--danger);
+        font-weight: 700;
+      }
+
+      .danger-button:hover:not(:disabled) {
+        background: #feecec;
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          width: min(100% - 20px, 1120px);
+          padding: 18px 0;
+        }
+
+        .topbar,
+        .panel-head {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .status {
+          text-align: left;
+        }
+
+        .grid,
+        .add-form,
+        .habit-row {
+          grid-template-columns: 1fr;
+        }
+
+        .habit-row {
+          align-items: stretch;
+        }
+
+        .check {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark">HT</div>
+          <div>
+            <h1>Habit Tracker</h1>
+            <p class="muted" id="todayLabel"></p>
+          </div>
+        </div>
+        <p class="status" id="status" role="status"></p>
+      </header>
+
+      <section class="grid" aria-label="Habit tracker">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Today's Habits</h2>
+            <button class="secondary" id="refreshButton" type="button">Refresh</button>
+          </div>
+
+          <form class="add-form" id="habitForm">
+            <input
+              id="habitName"
+              name="name"
+              autocomplete="off"
+              maxlength="80"
+              placeholder="Add a habit"
+              required
+            >
+            <button class="primary" type="submit">Add</button>
+          </form>
+
+          <div class="habit-list" id="habitList"></div>
+        </div>
+
+        <aside class="panel" aria-label="Streak">
+          <div class="panel-head">
+            <h2>Current Streak</h2>
+          </div>
+
+          <p class="streak-number" id="streakNumber">0</p>
+          <p class="muted" id="streakDate">Not evaluated yet</p>
+
+          <div class="progress">
+            <div class="progress-label">
+              <span id="progressText">0 of 0 complete</span>
+              <span id="progressPercent">0%</span>
+            </div>
+            <div class="bar" aria-hidden="true">
+              <div class="bar-fill" id="barFill"></div>
+            </div>
+          </div>
+
+          <button class="primary" id="evaluateButton" type="button">
+            Evaluate Today
+          </button>
+
+          <button class="danger-button" id="resetButton" type="button">
+            Start Over
+          </button>
+
+          <div id="milestone"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const state = {
+        habits: [],
+        streak: null,
+      };
+
+      const habitForm = document.querySelector("#habitForm");
+      const habitInput = document.querySelector("#habitName");
+      const habitList = document.querySelector("#habitList");
+      const statusText = document.querySelector("#status");
+      const refreshButton = document.querySelector("#refreshButton");
+      const evaluateButton = document.querySelector("#evaluateButton");
+      const resetButton = document.querySelector("#resetButton");
+      const streakNumber = document.querySelector("#streakNumber");
+      const streakDate = document.querySelector("#streakDate");
+      const milestone = document.querySelector("#milestone");
+      const progressText = document.querySelector("#progressText");
+      const progressPercent = document.querySelector("#progressPercent");
+      const barFill = document.querySelector("#barFill");
+      const todayLabel = document.querySelector("#todayLabel");
+
+      todayLabel.textContent = new Intl.DateTimeFormat(undefined, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }).format(new Date());
+
+      function setStatus(message, isError = false) {
+        statusText.textContent = message;
+        statusText.classList.toggle("error", isError);
+      }
+
+      async function request(path, options = {}) {
+        const response = await fetch(path, {
+          headers: {
+            "Content-Type": "application/json",
+            ...options.headers,
+          },
+          ...options,
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          const detail = data && data.detail ? data.detail : "Something went wrong";
+          throw new Error(detail);
+        }
+        return data;
+      }
+
+      function renderHabits() {
+        habitList.innerHTML = "";
+
+        if (state.habits.length === 0) {
+          habitList.innerHTML = '<div class="empty">No habits yet.</div>';
+          renderProgress();
+          return;
+        }
+
+        for (const habit of state.habits) {
+          const row = document.createElement("div");
+          row.className = `habit-row${habit.completed_today ? " done" : ""}`;
+
+          const check = document.createElement("div");
+          check.className = "check";
+          check.textContent = "✓";
+
+          const name = document.createElement("div");
+          name.className = "habit-name";
+          name.textContent = habit.name;
+
+          const button = document.createElement("button");
+          button.className = "complete-button";
+          button.type = "button";
+          button.textContent = habit.completed_today ? "Done" : "Mark done";
+          button.disabled = habit.completed_today;
+          button.addEventListener("click", () => completeHabit(habit.id));
+
+          row.append(check, name, button);
+          habitList.append(row);
+        }
+
+        renderProgress();
+      }
+
+      function renderProgress() {
+        const total = state.habits.length;
+        const complete = state.habits.filter((habit) => habit.completed_today).length;
+        const percent = total === 0 ? 0 : Math.round((complete / total) * 100);
+
+        progressText.textContent = `${complete} of ${total} complete`;
+        progressPercent.textContent = `${percent}%`;
+        barFill.style.width = `${percent}%`;
+      }
+
+      function renderStreak() {
+        const streak = state.streak || {
+          current_streak: 0,
+          last_evaluated_date: null,
+          milestone: null,
+        };
+
+        streakNumber.textContent = streak.current_streak;
+        streakDate.textContent = streak.last_evaluated_date
+          ? `Last checked ${streak.last_evaluated_date}`
+          : "Not evaluated yet";
+
+        if (streak.milestone) {
+          milestone.innerHTML = `<div class="milestone">${streak.milestone.message}</div>`;
+        } else {
+          milestone.innerHTML = "";
+        }
+      }
+
+      async function loadAll() {
+        try {
+          setStatus("Loading...");
+          const [habits, streak] = await Promise.all([
+            request("/habits"),
+            request("/streak"),
+          ]);
+          state.habits = habits;
+          state.streak = streak;
+          renderHabits();
+          renderStreak();
+          setStatus("Ready");
+        } catch (error) {
+          setStatus(error.message, true);
+        }
+      }
+
+      async function addHabit(event) {
+        event.preventDefault();
+        const name = habitInput.value.trim();
+        if (!name) {
+          setStatus("Habit name cannot be blank", true);
+          return;
+        }
+
+        try {
+          setStatus("Adding habit...");
+          await request("/habits", {
+            method: "POST",
+            body: JSON.stringify({ name }),
+          });
+          habitInput.value = "";
+          await loadAll();
+        } catch (error) {
+          setStatus(error.message, true);
+        }
+      }
+
+      async function completeHabit(id) {
+        try {
+          setStatus("Saving...");
+          await request(`/habits/${id}/checkins`, { method: "POST" });
+          await loadAll();
+        } catch (error) {
+          setStatus(error.message, true);
+        }
+      }
+
+      async function evaluateToday() {
+        try {
+          setStatus("Evaluating...");
+          state.streak = await request("/streak/evaluate-today", { method: "POST" });
+          renderStreak();
+          setStatus("Streak updated");
+        } catch (error) {
+          setStatus(error.message, true);
+        }
+      }
+
+      async function resetApp() {
+        const confirmed = window.confirm(
+          "Start over? This will delete all habits, check-ins, and streak progress."
+        );
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          setStatus("Starting over...");
+          await request("/reset", { method: "POST" });
+          await loadAll();
+          setStatus("Fresh start ready");
+        } catch (error) {
+          setStatus(error.message, true);
+        }
+      }
+
+      habitForm.addEventListener("submit", addHabit);
+      refreshButton.addEventListener("click", loadAll);
+      evaluateButton.addEventListener("click", evaluateToday);
+      resetButton.addEventListener("click", resetApp);
+
+      loadAll();
+    </script>
+  </body>
+</html>

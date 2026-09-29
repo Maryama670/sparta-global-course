@@ -1,0 +1,13 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+chroma_store/
+.git-backup/
+
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__MACOSX/
+.DS_Store
